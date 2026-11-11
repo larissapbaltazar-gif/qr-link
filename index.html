@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Redirecionando…</title>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-EV50FKGMWF"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-EV50FKGMWF');
+
+  var destino = 'https://www.linkedin.com/company/quintoandar-com-br/home/';
+  var redirecionado = false;
+  function ir() {
+    if (redirecionado) return;
+    redirecionado = true;
+    window.location.replace(destino);
+  }
+
+  gtag('event', 'qr_scan', {
+    event_callback: ir,
+    event_timeout: 1500
+  });
+
+  setTimeout(ir, 1500);
+</script>
+<style>
+  body { font-family: system-ui, sans-serif; display: flex; min-height: 100vh; margin: 0;
+         align-items: center; justify-content: center; text-align: center; padding: 16px; }
+</style>
+</head>
+<body>
+  <p>Redirecionando…<br><a href="https://www.linkedin.com/company/quintoandar-com-br/home/">Clique aqui se não for redirecionado</a></p>
+</body>
+</html>
