@@ -1,8 +1,24 @@
 {
   "destinos": [
-    { "id": "qr-linkedin", "nome": "LinkedIn QuintoAndar", "url": "https://www.linkedin.com/company/quintoandar-com-br" },
-    { "id": "qr-carreiras", "nome": "Página de carreiras", "url": "https://carreiras.quintoandar.com.br/" },
-    { "id": "qr-newsroom", "nome": "Newsroom", "url": "https://www.quintoandar.com.br/newsroom/" }
+    {
+      "id": "qr-linkedin",
+      "nome": "LinkedIn QuintoAndar",
+      "url": "https://www.linkedin.com/company/quintoandar-com-br"
+    },
+    {
+      "id": "qr-carreiras",
+      "nome": "Página de carreiras",
+      "url": "https://carreiras.quintoandar.com.br/"
+    },
+    {
+      "id": "qr-newsroom",
+      "nome": "Newsroom",
+      "url": "https://www.quintoandar.com.br/newsroom/"
+    }
   ],
-  "midias": ["placa", "digital-card"]
+  "midias": [
+    "placa",
+    "digital-card"
+  ],
+  "eventos": []
 }

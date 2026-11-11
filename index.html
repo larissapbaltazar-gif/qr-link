@@ -43,8 +43,10 @@
   fetch('destinations.json?_=' + Date.now(), { cache: 'no-store' })
     .then(function (r) { return r.json(); })
     .then(function (d) {
+      var campanha = params.get('utm_campaign') || '';
+      var ev = (d.eventos || []).filter(function (x) { return x.origem === fonte && x.campanha === campanha; })[0];
       var achou = (d.destinos || []).filter(function (x) { return x.id === fonte; })[0];
-      destino = achou ? achou.url : PADRAO;
+      destino = ev ? ev.url : (achou ? achou.url : PADRAO);
       tentar();
     })
     .catch(function () { destino = PADRAO; tentar(); });

@@ -14,6 +14,7 @@
   label { display:block; font-weight:600; margin: 16px 0 6px; }
   select, input { width:100%; padding:10px; font-size:1rem; border:1px solid var(--bd); border-radius:8px; background:var(--bg); color:var(--fg); }
   button { padding:10px 14px; font-size:1rem; border:0; border-radius:8px; background:var(--acc); color:#fff; cursor:pointer; }
+  button:disabled { opacity:.4; cursor:not-allowed; }
   button.sec { background:transparent; color:var(--fg); border:1px solid var(--bd); }
   .row { display:flex; gap:8px; align-items:center; }
   .row > select { flex:1; }
@@ -35,7 +36,7 @@
   <div class="row"><select id="destino"></select><button class="sec" id="novoDestinoBtn" type="button">+ Novo</button></div>
   <div id="novoDestino" class="box hidden">
     <input id="ndNome" placeholder="Nome (ex.: Forms de talentos)">
-    <input id="ndUrl" placeholder="Link de destino (https://…)" style="margin-top:8px">
+    <input id="ndUrl" placeholder="Link padrão do destino (https://…)" style="margin-top:8px">
     <input id="ndId" placeholder="utm_source (ex.: qr-forms-talentos)" style="margin-top:8px">
     <div class="row" style="margin-top:8px"><button id="ndSalvar" type="button">Salvar destino</button><button class="sec" id="ndCancelar" type="button">Cancelar</button></div>
   </div>
@@ -50,6 +51,11 @@
   <label for="evento">Nome do evento (utm_campaign)</label>
   <input id="evento" placeholder="ex.: Brasa Summit 2026" autocomplete="off">
   <div class="hint">Vira minúsculo, sem acentos e com hífens. Ex.: <b>brasa-summit-2026</b></div>
+
+  <label for="evLink">Link específico deste evento (opcional)</label>
+  <input id="evLink" placeholder="https://… (deixe vazio para usar o link padrão do destino)" autocomplete="off">
+  <div class="hint" id="evHint"></div>
+  <button class="sec hidden" id="evSalvar" type="button" style="margin-top:8px">Salvar link do evento</button>
 
   <div id="resultado" class="hidden">
     <label>Link final</label>
@@ -104,8 +110,20 @@ function urlFinal(){
   return PAGES+'?utm_source='+encodeURIComponent($('destino').value)+'&utm_medium='+encodeURIComponent($('midia').value)+'&utm_campaign='+encodeURIComponent(c);
 }
 function qr(url){var q=qrcode(0,'M'); q.addData(url); q.make(); return q;}
+function achaEvento(){
+  var c=slug($('evento').value), o=$('destino').value;
+  return (dados.eventos||[]).filter(function(x){return x.origem===o&&x.campanha===c;})[0];
+}
+var ultimoEvento='';
 function atualizar(){
   ls('qr_destino',$('destino').value); ls('qr_midia',$('midia').value);
+  var chave=$('destino').value+'|'+slug($('evento').value), ev=achaEvento();
+  if(chave!==ultimoEvento){ ultimoEvento=chave; $('evLink').value=ev?ev.url:''; }
+  var l=$('evLink').value.trim(), c=slug($('evento').value);
+  var salvo=ev&&ev.url===l, pendente=l&&!salvo&&c;
+  $('evSalvar').classList.toggle('hidden',!pendente);
+  $('evHint').textContent=!l?'Sem link específico: o QR leva ao link padrão do destino.':(salvo?'Link salvo para este evento.':'Salve o link antes de baixar o QR.');
+  $('dlPng').disabled=$('dlSvg').disabled=!!pendente;
   var u=urlFinal();
   $('resultado').classList.toggle('hidden',!u);
   if(!u) return;
@@ -120,7 +138,7 @@ function baixar(href,nm){var a=document.createElement('a');a.href=href;a.downloa
 $('dlPng').onclick=function(){$('cv').toBlob(function(b){var u=URL.createObjectURL(b);baixar(u,nome()+'.png');setTimeout(function(){URL.revokeObjectURL(u);},2000);});};
 $('dlSvg').onclick=function(){var u=urlFinal(); if(!u)return; var svg=qr(u).createSvgTag({cellSize:10,margin:40,scalable:true});
   var b=new Blob([svg],{type:'image/svg+xml'}); var l=URL.createObjectURL(b); baixar(l,nome()+'.svg'); setTimeout(function(){URL.revokeObjectURL(l);},2000);};
-['destino','midia'].forEach(function(i){$(i).onchange=atualizar;}); $('evento').oninput=atualizar;
+['destino','midia'].forEach(function(i){$(i).onchange=atualizar;}); $('evento').oninput=atualizar; $('evLink').oninput=atualizar;
 
 function salvarNoGit(novo,descricao){
   var tk=ls('qr_token');
@@ -128,11 +146,19 @@ function salvarNoGit(novo,descricao){
   var h={Authorization:'Bearer '+tk,Accept:'application/vnd.github+json'};
   return fetch(API,{headers:h,cache:'no-store'}).then(function(r){ if(!r.ok) throw new Error('Token sem acesso ao repositório ('+r.status+').'); return r.json(); })
   .then(function(j){
-    var atual=JSON.parse(b64d(j.content)); novo(atual);
+    var atual=JSON.parse(b64d(j.content)); atual.eventos=atual.eventos||[]; novo(atual);
     return fetch(API,{method:'PUT',headers:h,body:JSON.stringify({message:descricao,content:b64e(JSON.stringify(atual,null,2)+'\n'),sha:j.sha})})
       .then(function(r){ if(!r.ok) throw new Error('Falha ao salvar ('+r.status+').'); dados=atual; });
   }).catch(function(e){ msg(e&&e.message?e.message:'Falha ao salvar.','err'); throw e; });
 }
+$('evSalvar').onclick=function(){
+  var l=$('evLink').value.trim(), o=$('destino').value, c=slug($('evento').value);
+  if(!/^https?:\/\//.test(l)){msg('O link do evento deve começar com https://','err');return;}
+  salvarNoGit(function(a){a.eventos=a.eventos||[];var e=a.eventos.filter(function(x){return x.origem===o&&x.campanha===c;})[0];
+    if(e) e.url=l; else a.eventos.push({origem:o,campanha:c,url:l});},'Link do evento: '+o+' / '+c).then(function(){
+    atualizar(); msg('Link do evento salvo. Aguarde cerca de 1 a 2 minutos antes de imprimir ou testar o QR.','ok');
+  }).catch(function(){});
+};
 $('novoDestinoBtn').onclick=function(){$('novoDestino').classList.remove('hidden');};
 $('ndCancelar').onclick=function(){$('novoDestino').classList.add('hidden');};
 $('ndNome').oninput=function(){ $('ndId').value='qr-'+slug($('ndNome').value).replace(/^qr-/,''); };
