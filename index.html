@@ -12,20 +12,45 @@
   gtag('js', new Date());
   gtag('config', 'G-EV50FKGMWF');
 
-  var destino = 'https://www.linkedin.com/company/quintoandar-com-br/';
+  var PADRAO = 'https://www.linkedin.com/company/quintoandar-com-br';
+  var params = new URLSearchParams(window.location.search);
+  var fonte = params.get('utm_source') || '';
+  if (fonte === 'qr') fonte = 'qr-linkedin'; // compatibilidade com QR antigos
+
+  var destino = null;
+  var gaOk = false;
   var redirecionado = false;
-  function ir() {
+
+  function ir(url) {
     if (redirecionado) return;
     redirecionado = true;
-    window.location.replace(destino);
+    window.location.replace(url);
+  }
+  function tentar() {
+    if (gaOk && destino) {
+      var l = document.getElementById('manual');
+      if (l) l.href = destino;
+      ir(destino);
+    }
   }
 
   gtag('event', 'qr_scan', {
-    event_callback: ir,
+    destino_id: fonte,
+    event_callback: function () { gaOk = true; tentar(); },
     event_timeout: 1500
   });
 
-  setTimeout(ir, 1500);
+  fetch('destinations.json?_=' + Date.now(), { cache: 'no-store' })
+    .then(function (r) { return r.json(); })
+    .then(function (d) {
+      var achou = (d.destinos || []).filter(function (x) { return x.id === fonte; })[0];
+      destino = achou ? achou.url : PADRAO;
+      tentar();
+    })
+    .catch(function () { destino = PADRAO; tentar(); });
+
+  // fallback: redireciona mesmo se o GA ou a lista falharem
+  setTimeout(function () { ir(destino || PADRAO); }, 1500);
 </script>
 <style>
   body { font-family: system-ui, sans-serif; display: flex; min-height: 100vh; margin: 0;
@@ -33,6 +58,6 @@
 </style>
 </head>
 <body>
-  <p>Redirecionando…<br><a href="https://www.linkedin.com/company/quintoandar-com-br/">Clique aqui se não for redirecionado</a></p>
+  <p>Redirecionando…<br><a id="manual" href="https://www.linkedin.com/company/quintoandar-com-br">Clique aqui se não for redirecionado</a></p>
 </body>
 </html>
