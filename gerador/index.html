@@ -32,6 +32,19 @@
 <main>
   <h1>Gerador de QR com tracking</h1>
 
+  <div class="box" id="ajuda">
+    <b>Como usar</b>
+    <ol style="margin:8px 0 0; padding-left:20px; line-height:1.5">
+      <li>Escolha o <b>Destino</b> (para onde o QR leva).</li>
+      <li>Escolha a <b>Mídia</b> (onde o QR será usado, como placa ou digital-card).</li>
+      <li>Digite o <b>nome do evento</b>. Ele vira a campanha no Google Analytics.</li>
+      <li>Se o evento tem um link próprio (ex.: um forms só dele), preencha <b>Link específico</b> e clique em <b>Salvar link do evento</b>. Senão, deixe vazio.</li>
+      <li>Confira o <b>Link final</b> e clique em <b>Baixar PNG</b> (telas e documentos) ou <b>Baixar SVG</b> (impressão, enviar à gráfica).</li>
+      <li><b>Antes de imprimir, escaneie o QR com o celular</b> e confirme que abre o lugar certo.</li>
+    </ol>
+    <div class="hint" style="margin-top:8px">Destino ou mídia novos: use os botões <b>+ Novo</b> / <b>+ Nova</b>. Isso exige o token do GitHub (no fim da página). Depois de salvar, espere cerca de 1 minuto antes de imprimir ou testar.</div>
+  </div>
+
   <label for="destino">Destino</label>
   <div class="row"><select id="destino"></select><button class="sec" id="novoDestinoBtn" type="button">+ Novo</button></div>
   <div id="novoDestino" class="box hidden">
