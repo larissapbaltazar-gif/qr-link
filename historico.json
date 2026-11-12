@@ -1,0 +1,18 @@
+{
+  "qrs": [
+    {
+      "data": "2026-11-11T22:30:00.000Z",
+      "campanha": "brasa-summit-2026",
+      "origem": "qr-linkedin",
+      "midia": "placa",
+      "url": "https://qr-eventos.qr-go.workers.dev/?utm_source=qr-linkedin&utm_medium=placa&utm_campaign=brasa-summit-2026"
+    },
+    {
+      "data": "2026-11-11T22:30:00.000Z",
+      "campanha": "select-experience-2026",
+      "origem": "qr-linkedin",
+      "midia": "placa",
+      "url": "https://qr-eventos.qr-go.workers.dev/?utm_source=qr-linkedin&utm_medium=placa&utm_campaign=select-experience-2026"
+    }
+  ]
+}
