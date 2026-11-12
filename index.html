@@ -17,8 +17,8 @@
   var fonte = params.get('utm_source') || '';
   if (fonte === 'qr') fonte = 'qr-linkedin'; // compatibilidade com QR antigos
 
-  var destino = null;
-  var gaOk = false;
+  var destino = null;      // só é preenchido quando a lista de destinos responde
+  var gaOk = false;        // true quando o GA confirma o evento OU após 1,5 s
   var redirecionado = false;
 
   function ir(url) {
@@ -27,32 +27,42 @@
     window.location.replace(url);
   }
   function tentar() {
-    if (gaOk && destino) {
+    if (destino) {
       var l = document.getElementById('manual');
-      if (l) l.href = destino;
-      ir(destino);
+      if (l) l.href = destino;      // o link manual só aponta para o destino real
     }
+    if (gaOk && destino) ir(destino);
   }
 
+  // 1) Evento no GA. O GA nunca segura o redirecionamento por mais de 1,5 s.
   gtag('event', 'qr_scan', {
     destino_id: fonte,
     event_callback: function () { gaOk = true; tentar(); },
     event_timeout: 1500
   });
+  setTimeout(function () { gaOk = true; tentar(); }, 1500);
 
-  fetch('destinations.json?_=' + Date.now(), { cache: 'no-store' })
-    .then(function (r) { return r.json(); })
-    .then(function (d) {
-      var campanha = params.get('utm_campaign') || '';
-      var ev = (d.eventos || []).filter(function (x) { return x.origem === fonte && x.campanha === campanha; })[0];
-      var achou = (d.destinos || []).filter(function (x) { return x.id === fonte; })[0];
-      destino = ev ? ev.url : ((achou && achou.url) ? achou.url : PADRAO);
-      tentar();
-    })
-    .catch(function () { destino = PADRAO; tentar(); });
+  // 2) Lista de destinos. Em rede lenta (celular) ela pode demorar: a página ESPERA por ela
+  //    e tenta de novo se falhar, em vez de cair no destino reserva.
+  function carregar(tentativa) {
+    fetch('destinations.json?_=' + Date.now(), { cache: 'no-store' })
+      .then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); })
+      .then(function (d) {
+        var campanha = params.get('utm_campaign') || '';
+        var ev = (d.eventos || []).filter(function (x) { return x.origem === fonte && x.campanha === campanha; })[0];
+        var achou = (d.destinos || []).filter(function (x) { return x.id === fonte; })[0];
+        destino = ev ? ev.url : ((achou && achou.url) ? achou.url : PADRAO);
+        tentar();
+      })
+      .catch(function () {
+        if (tentativa < 3) setTimeout(function () { carregar(tentativa + 1); }, 700 * tentativa);
+        else { destino = PADRAO; tentar(); }
+      });
+  }
+  carregar(1);
 
-  // fallback: redireciona mesmo se o GA ou a lista falharem
-  setTimeout(function () { ir(destino || PADRAO); }, 1500);
+  // 3) Último recurso: se nada respondeu em 12 s, vai para o destino reserva.
+  setTimeout(function () { if (!destino) { destino = PADRAO; gaOk = true; tentar(); } }, 12000);
 </script>
 <style>
   body { font-family: system-ui, sans-serif; display: flex; min-height: 100vh; margin: 0;
@@ -60,6 +70,6 @@
 </style>
 </head>
 <body>
-  <p>Redirecionando…<br><a id="manual" href="https://www.linkedin.com/company/quintoandar-com-br">Clique aqui se não for redirecionado</a></p>
+  <p>Redirecionando…<br><a id="manual">Clique aqui se não for redirecionado</a></p>
 </body>
 </html>
