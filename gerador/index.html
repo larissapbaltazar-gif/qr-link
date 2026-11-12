@@ -27,6 +27,9 @@
   .seg button small { font-weight:400; color:var(--mut); font-size:.78rem; }
   .seg button[aria-checked=true] { border-color:var(--acc); outline:2px solid var(--acc); background:var(--card); }
   .aviso { color:var(--warn); }
+  label .hint, .check .hint { display:inline; margin:0 0 0 4px; font-weight:400; }
+  .rot { flex:1; font-weight:600; padding:10px 0; }
+  input:disabled { background:var(--card); color:var(--mut); border-style:dashed; cursor:not-allowed; font-style:italic; opacity:1; -webkit-text-fill-color:var(--mut); }
   .tit { text-transform:uppercase; font-weight:700; text-decoration:underline; font-size:.88rem; letter-spacing:.03em; margin:0 0 12px; }
   .guia { display:grid; grid-template-columns:1fr; gap:16px; }
   .guia .card { border:1px solid var(--bd); border-radius:12px; padding:18px 22px; background:var(--card); }
@@ -102,7 +105,7 @@
           <li><b>Destino</b>: para onde o QR leva. Ex.: LinkedIn, Página de carreiras, Forms de talentos. A lista guarda só o <b>utm_source</b>, sempre com a mesma grafia.</li>
           <li><b>Mídia</b>: onde o QR será usado. Ex.: <code>placa</code>, <code>digital-card</code>, <code>flyer</code>, <code>email</code>.</li>
           <li><b>Nome do evento</b>: vira a campanha no Google Analytics. Escreva como quiser, o gerador padroniza. Ex.: <code>Brasa Summit 2026</code> vira <code>brasa-summit-2026</code>. Eventos já usados aparecem como sugestão.</li>
-          <li><b>Link do evento</b>: obrigatório quando o destino usa um link diferente em cada evento. Nos demais, é opcional.</li>
+          <li><b>Link</b>: é sempre necessário. Destino de <b>link fixo</b> mostra o link já cadastrado, apenas para consulta (campo travado). Destino de <b>link por evento</b> pede o link deste evento, que você digita.</li>
           <li>Clique em <b>Salvar e gerar QR</b>. O QR só aparece depois de salvo, e fica guardado na aba <b>Histórico</b>.</li>
           <li>Baixe o <b>PNG</b> (slides, e-mail, redes) ou o <b>SVG</b> (placas e material impresso: envie à gráfica).</li>
           <li><b>Antes de imprimir, escaneie o QR com o celular</b> e confirme que abre o lugar certo.</li>
@@ -112,7 +115,7 @@
       <article class="card">
         <h3 class="tit">Link fixo ou link por evento</h3>
         <ul>
-          <li><b>Link fixo</b>: o mesmo link em todos os eventos. Ex.: LinkedIn, Newsroom.</li>
+          <li><b>Link fixo</b>: o mesmo link em todos os eventos. Ex.: LinkedIn, Newsroom. O link é definido ao cadastrar o destino e depois só aparece para consulta.</li>
           <li><b>Link por evento</b>: cada evento informa o seu. Ex.: um forms diferente a cada evento. O destino guarda só o <b>utm_source</b>.</li>
           <li><b>Memorizar</b> desmarcado: o destino não entra na lista e o campo vira apenas <b>Link</b>, valendo só para este QR.</li>
         </ul>
@@ -121,8 +124,9 @@
       <article class="card">
         <h3 class="tit">Destino ou mídia novos</h3>
         <ul>
-          <li>Clique em <b>+ Novo</b> (ou <b>+ Nova</b>) e preencha os campos que aparecem. Clique em <b>Cancelar</b> para voltar à lista.</li>
-          <li>Com <b>Memorizar</b> marcado, escolha o <b>tipo de link</b> (fixo ou por evento). O item entra na lista e aparece nos próximos QR.</li>
+          <li>Clique em <b>+ Novo</b> (ou <b>+ Nova</b>) e preencha os campos que aparecem. Clique em <b>Cancelar</b> para voltar à lista de destinos.</li>
+          <li>Com <b>Memorizar</b> marcado, escolha o <b>tipo de link</b> (fixo ou por evento) e preencha o campo de link que aparece logo abaixo. O item entra na lista e aparece nos próximos QR.</li>
+          <li>Ao usar um destino que já existe, não há o que memorizar: só escolha na lista.</li>
           <li>O <b>utm_source</b> do destino sempre começa com <code>qr-</code>. Ex.: <code>qr-forms-talentos</code>.</li>
         </ul>
       </article>
@@ -150,44 +154,45 @@
   <!-- ===== ABA GERAR ===== -->
   <section id="abaGerar">
     <form id="form" novalidate autocomplete="off">
-      <label for="destino">Destino</label>
+      <label for="destino">Destino <span class="hint">(utm_source)</span></label>
       <div class="row">
         <select id="destino"></select>
+        <span id="rotuloNovo" class="rot" hidden>Novo destino</span>
         <button class="sec" id="novoDestinoBtn" type="button" aria-expanded="false">+ Novo</button>
       </div>
       <div id="camposDestino" hidden>
         <input class="sub" id="ndNome" type="text" placeholder="Nome do destino (ex.: Forms de talentos)" aria-label="Nome do destino">
         <input class="sub" id="ndId" type="text" placeholder="utm_source (ex.: qr-forms-talentos)" aria-label="utm_source do destino">
-        <label class="check"><input type="checkbox" id="ndMem" checked> Memorizar este destino (a grafia do utm_source fica guardada para os próximos QR)</label>
+        <label class="check"><input type="checkbox" id="ndMem" checked> <span>Memorizar este destino <span class="hint">(a grafia do utm_source fica guardada para os próximos QR)</span></span></label>
         <div id="blocoTipo">
           <label style="margin-top:14px">Tipo de link deste destino</label>
           <div class="seg" role="radiogroup" aria-label="Tipo de link do destino">
             <button type="button" role="radio" aria-checked="false" id="tipoFixo" class="sec">Link fixo<small>o mesmo em todos os eventos</small></button>
             <button type="button" role="radio" aria-checked="false" id="tipoEvento" class="sec">Link por evento<small>cada evento informa o seu</small></button>
           </div>
-          <input class="sub" id="ndUrl" type="url" placeholder="Link fixo do destino (https://…)" aria-label="Link fixo do destino" hidden>
         </div>
       </div>
+      <div id="blocoLink" hidden>
+        <label for="evLink" id="evLinkLabel">Link</label>
+        <input id="evLink" type="url" placeholder="https://…">
+        <div class="hint" id="evLinkHint"></div>
+      </div>
 
-      <label for="midia">Mídia</label>
+      <label for="midia">Mídia <span class="hint">(utm_medium)</span></label>
       <div class="row">
         <select id="midia"></select>
         <button class="sec" id="novaMidiaBtn" type="button" aria-expanded="false">+ Nova</button>
       </div>
       <div id="camposMidia" hidden>
         <input class="sub" id="nmNome" type="text" placeholder="Nome da mídia (ex.: flyer)" aria-label="Nome da mídia">
-        <label class="check"><input type="checkbox" id="nmMem" checked> Memorizar esta mídia (aparece nos próximos QR)</label>
+        <label class="check"><input type="checkbox" id="nmMem" checked> <span>Memorizar esta mídia <span class="hint">(a grafia da utm_medium fica guardada para os próximos QR)</span></span></label>
       </div>
 
-      <label for="evento">Nome do evento</label>
+      <label for="evento">Nome do evento <span class="hint">(utm_campaign)</span></label>
       <input id="evento" type="text" list="listaEventos" placeholder="ex.: Brasa Summit 2026">
       <datalist id="listaEventos"></datalist>
       <div class="hint" id="eventoHint">Vira minúsculo, sem acentos e com hífens.</div>
       <div class="hint aviso" id="eventoAviso" hidden></div>
-
-      <label for="evLink" id="evLinkLabel">Link do evento (opcional)</label>
-      <input id="evLink" type="url" placeholder="https://…">
-      <div class="hint" id="evLinkHint"></div>
 
       <label>Link final</label>
       <div id="urlFinal" class="mono"></div>
@@ -207,7 +212,7 @@
         <button id="cpLink" type="button" class="sec">Copiar link</button>
       </div>
     </div>
-      <div id="vazio">O QR code aparece aqui depois de clicar em <b>&nbsp;Salvar e gerar QR</b>.</div>
+      <div id="vazio"><span>O QR code aparece aqui depois de clicar em <b>Salvar e gerar QR</b>.</span></div>
     </div>
 
     <details class="box" id="conexao" style="margin-top:24px">
@@ -250,7 +255,7 @@ var OWNER='larissapbaltazar-gif', REPO='qr-link';
 var PAGES='https://qr-eventos.qr-go.workers.dev/';
 var API='https://api.github.com/repos/'+OWNER+'/'+REPO+'/contents/';
 var dados={destinos:[],midias:[],eventos:[]}, hist={qrs:[]};
-var tipoLink='', novoDestino=false, novaMidia=false, idEditado=false, ultimaChave='', ultimoPrefill='', memLs={};
+var tipoLink='', novoDestino=false, novaMidia=false, idEditado=false, ultimoPrefill='', memLs={};
 var $=function(i){return document.getElementById(i);};
 
 /* ---------- utilitários ---------- */
@@ -306,10 +311,10 @@ function gravar(path,mutar,commit,repetiu){
 /* ---------- seleção e validação ---------- */
 function achaEvento(origem,campanha){ return (dados.eventos||[]).filter(function(x){return x.origem===origem&&x.campanha===campanha;})[0]; }
 function selecao(){
-  var s={ campanha:slug($('evento').value), linkEvento:$('evLink').value.trim() };
+  var s={ campanha:slug($('evento').value) };
   if(novoDestino){
     var id=slug($('ndId').value);
-    s.destinoNovo={ nome:$('ndNome').value.trim(), url:$('ndUrl').value.trim(), id:id, mem:$('ndMem').checked, tipo:tipoLink };
+    s.destinoNovo={ nome:$('ndNome').value.trim(), id:id, mem:$('ndMem').checked, tipo:tipoLink };
     s.origem=id;
   } else s.origem=$('destino').value;
   if(novaMidia){ s.midiaNova={ nome:slug($('nmNome').value), mem:$('nmMem').checked }; s.midia=s.midiaNova.nome; }
@@ -321,26 +326,31 @@ function urlFinal(s){
   return PAGES+'?utm_source='+encodeURIComponent(s.origem)+'&utm_medium='+encodeURIComponent(s.midia)+'&utm_campaign='+encodeURIComponent(s.campanha);
 }
 function destinoAtual(){ return dados.destinos.filter(function(x){return x.id===$('destino').value;})[0]; }
-function linkObrigatorio(){
-  if(novoDestino){ if(!$('ndMem').checked) return true; return tipoLink==='evento'; }
-  var d=destinoAtual(); return !!d && !d.url;
+/* modo do campo de link: oculto | fixoExistente (somente leitura) | fixoNovo | evento */
+function modoLink(){
+  if(novoDestino){
+    if(!$('ndMem').checked) return 'evento';
+    return tipoLink==='fixo'?'fixoNovo':(tipoLink==='evento'?'evento':'oculto');
+  }
+  var d=destinoAtual(); if(!d) return 'oculto';
+  return d.url?'fixoExistente':'evento';
 }
 function validar(s){
   if(novoDestino){
     if(!s.destinoNovo.nome) return 'Informe o nome do novo destino.';
     if(!s.destinoNovo.id) return 'Informe o utm_source do novo destino.';
     if(dados.destinos.some(function(x){return x.id===s.destinoNovo.id;})) return 'Já existe um destino com esse utm_source. Clique em Cancelar e selecione-o na lista.';
-    if(s.destinoNovo.mem){
-      if(!s.destinoNovo.tipo) return 'Escolha o tipo de link do destino: link fixo ou link por evento.';
-      if(s.destinoNovo.tipo==='fixo' && !ehUrl(s.destinoNovo.url)) return 'Informe o link fixo do destino, começando com https://';
-    }
+    if(s.destinoNovo.mem && !s.destinoNovo.tipo) return 'Escolha o tipo de link do destino: link fixo ou link por evento.';
   } else if(!s.origem) return 'Escolha um destino.';
   if(novaMidia){
     if(!s.midiaNova.nome) return 'Informe o nome da nova mídia.';
   } else if(!s.midia) return 'Escolha uma mídia.';
   if(!s.campanha) return 'Informe o nome do evento.';
-  if(linkObrigatorio() && !s.linkEvento) return (novoDestino&&!s.destinoNovo.mem) ? 'Informe o Link deste QR.' : 'Informe o link deste evento: este destino usa um link diferente em cada evento.';
-  if(s.linkEvento && !ehUrl(s.linkEvento)) return 'O link deve começar com https:// e ser um endereço completo.';
+  var modo=modoLink(), link=$('evLink').value.trim();
+  if(modo!=='fixoExistente'){
+    if(!link) return modo==='fixoNovo' ? 'Informe o link fixo do destino.' : ((novoDestino&&!$('ndMem').checked) ? 'Informe o Link deste QR.' : 'Informe o link deste evento.');
+    if(!ehUrl(link)) return 'O link deve começar com https:// e ser um endereço completo.';
+  }
   return null;
 }
 
@@ -379,14 +389,14 @@ function preencherListas(manter){
   if(sm&&dados.midias.indexOf(sm)>-1) m.value=sm;
 }
 function modoDestino(on){
-  novoDestino=on; $('camposDestino').hidden=!on; $('destino').disabled=on;
+  novoDestino=on; $('camposDestino').hidden=!on; $('destino').hidden=on; $('rotuloNovo').hidden=!on;
   $('novoDestinoBtn').textContent=on?'Cancelar':'+ Novo'; $('novoDestinoBtn').setAttribute('aria-expanded',on);
 }
 function modoMidia(on){
   novaMidia=on; $('camposMidia').hidden=!on; $('midia').disabled=on;
   $('novaMidiaBtn').textContent=on?'Cancelar':'+ Nova'; $('novaMidiaBtn').setAttribute('aria-expanded',on);
 }
-function alternarDestino(){ modoDestino(!novoDestino); if(novoDestino) $('ndNome').focus(); else { $('ndNome').value=$('ndUrl').value=$('ndId').value=''; idEditado=false; $('ndMem').checked=true; tipoLink=''; } mudou(); }
+function alternarDestino(){ modoDestino(!novoDestino); if(novoDestino) $('ndNome').focus(); else { $('ndNome').value=$('ndId').value=''; $('evLink').value=''; ultimoPrefill=''; idEditado=false; $('ndMem').checked=true; tipoLink=''; } mudou(); }
 function alternarMidia(){ modoMidia(!novaMidia); if(novaMidia) $('nmNome').focus(); else { $('nmNome').value=''; $('nmMem').checked=true; } mudou(); }
 function nomesEventos(){
   var m={}; hist.qrs.forEach(function(q){m[q.campanha]=1;}); (dados.eventos||[]).forEach(function(e){m[e.campanha]=1;});
@@ -408,26 +418,28 @@ function avisoEvento(s){
   return perto.length?('Parecido com evento já usado: '+perto.slice(0,3).join(', ')+'. Se for o mesmo evento, use exatamente esse nome.'):'';
 }
 function atualizarCampos(){
-  var mem=$('ndMem').checked;
+  var mem=$('ndMem').checked, modo=modoLink(), inp=$('evLink'), campanha=slug($('evento').value);
   $('blocoTipo').hidden=!(novoDestino&&mem);
-  $('ndUrl').hidden=!(novoDestino&&mem&&tipoLink==='fixo');
   $('tipoFixo').setAttribute('aria-checked',tipoLink==='fixo'); $('tipoEvento').setAttribute('aria-checked',tipoLink==='evento');
-  var obr=linkObrigatorio(), lab,hint;
-  if(novoDestino&&!mem){ lab='Link'; hint='Vale só para este QR. O destino não fica na lista.'; }
-  else if(obr){ lab='Link do evento'; hint='Obrigatório: este destino usa um link diferente em cada evento.'; }
-  else if(novoDestino&&!tipoLink){ lab='Link do evento (opcional)'; hint='Escolha antes o tipo de link do destino.'; }
-  else { lab='Link do evento (opcional)'; hint='Vazio = usa o link fixo do destino.'; }
-  $('evLinkLabel').textContent=lab; $('evLinkHint').textContent=hint; $('evLink').required=obr; $('evLink').setAttribute('aria-required',obr);
+  $('blocoLink').hidden=(modo==='oculto');
+  var prefill='';
+  if(modo==='fixoExistente'){ prefill=destinoAtual().url; }
+  else if(modo==='evento' && !novoDestino){ var e=achaEvento($('destino').value,campanha); prefill=e?e.url:''; }
+  if(modo==='fixoExistente'){ inp.value=prefill; }
+  else if(inp.value===''||inp.value===ultimoPrefill){ inp.value=prefill; }
+  ultimoPrefill=prefill;
+  inp.disabled=(modo==='fixoExistente'); inp.required=(modo!=='fixoExistente'&&modo!=='oculto'); inp.setAttribute('aria-required',inp.required);
+  var lab='Link', hint='';
+  if(modo==='fixoExistente'){ lab='Link fixo do destino'; hint='Somente leitura: definido quando o destino foi cadastrado. Não pode ser alterado aqui.'; }
+  else if(modo==='fixoNovo'){ lab='Link fixo do destino'; hint='O mesmo link em todos os eventos. Obrigatório.'; }
+  else if(novoDestino&&!mem){ lab='Link'; hint='Vale só para este QR. O destino não fica na lista.'; }
+  else if(modo==='evento'){ lab='Link do evento'; hint='Este destino usa um link diferente em cada evento. Obrigatório.'; }
+  $('evLinkLabel').textContent=lab; $('evLinkHint').textContent=hint;
 }
 function mudou(){
   $('resultado').hidden=true; msg('');
   atualizarCampos();
-  var s=selecao(), chave=s.origem+'|'+s.campanha;
-  if(chave!==ultimaChave){
-    ultimaChave=chave; var ev=achaEvento(s.origem,s.campanha), novo=ev?ev.url:'';
-    if($('evLink').value===ultimoPrefill||$('evLink').value==='') $('evLink').value=novo;
-    ultimoPrefill=novo; s=selecao();
-  }
+  var s=selecao();
   if(!novoDestino&&$('destino').value) ls('qr_destino',$('destino').value);
   if(!novaMidia&&$('midia').value) ls('qr_midia',$('midia').value);
   var slugEv=slug($('evento').value), existe=nomesEventos().indexOf(slugEv)>-1;
@@ -447,12 +459,12 @@ function salvar(ev){
   var s=selecao(), erro=validar(s);
   if(erro){ msg(erro,'err'); return; }
   var url=urlFinal(s), existente=hist.qrs.filter(function(q){return q.url===url;})[0];
-  var evAtual=achaEvento(s.origem,s.campanha), linkEv=s.linkEvento;
+  var modo=modoLink(), link=$('evLink').value.trim(), evAtual=achaEvento(s.origem,s.campanha), linkEv=(modo==='evento')?link:'';
   var op={
-    novoDestino: s.destinoNovo&&s.destinoNovo.mem ? (s.destinoNovo.tipo==='fixo' ? {id:s.destinoNovo.id,nome:s.destinoNovo.nome,url:s.destinoNovo.url} : {id:s.destinoNovo.id,nome:s.destinoNovo.nome}) : null,
+    novoDestino: s.destinoNovo&&s.destinoNovo.mem ? (s.destinoNovo.tipo==='fixo' ? {id:s.destinoNovo.id,nome:s.destinoNovo.nome,url:link} : {id:s.destinoNovo.id,nome:s.destinoNovo.nome}) : null,
     novaMidia: s.midiaNova&&s.midiaNova.mem ? s.midiaNova.nome : null,
     evento: (linkEv&&(!evAtual||evAtual.url!==linkEv)) ? {origem:s.origem,campanha:s.campanha,url:linkEv} : null,
-    removerEvento: (!linkEv&&evAtual) ? {origem:s.origem,campanha:s.campanha} : null
+    removerEvento: null
   };
   var mexeConfig=!!(op.novoDestino||op.novaMidia||op.evento||op.removerEvento);
   var precisaHist=!existente;
@@ -489,8 +501,8 @@ function salvar(ev){
     preencherListas(true);
     if(estavaNovoD){ modoDestino(false); if(op.novoDestino) $('destino').value=s.origem; }
     if(estavaNovaM){ modoMidia(false); if(op.novaMidia) $('midia').value=s.midia; }
-    $('ndNome').value=$('ndUrl').value=$('ndId').value=$('nmNome').value=''; idEditado=false; $('ndMem').checked=$('nmMem').checked=true; tipoLink='';
-    ultimaChave=s.origem+'|'+s.campanha; ultimoPrefill=linkEv||''; atualizarCampos(); atualizarSugestoes();
+    $('ndNome').value=$('ndId').value=$('nmNome').value=''; idEditado=false; $('ndMem').checked=$('nmMem').checked=true; tipoLink='';
+    ultimoPrefill=link; atualizarCampos(); atualizarSugestoes();
     $('urlFinal').textContent=url;
     mostrarResultado({url:url,origem:s.origem,midia:s.midia,campanha:s.campanha});
     var aviso=(op.novoDestino||op.evento||op.removerEvento)?' Aguarde cerca de 1 minuto antes de imprimir ou testar o QR.':'';
@@ -535,9 +547,8 @@ $('destino').onchange=mudou; $('midia').onchange=mudou; $('evento').oninput=mudo
 $('ndNome').oninput=function(){ if(!idEditado) $('ndId').value='qr-'+slug($('ndNome').value).replace(/^qr-/,''); if(!$('ndNome').value.trim()) $('ndId').value=''; mudou(); };
 $('ndId').oninput=function(){ idEditado=true; mudou(); };
 $('ndId').onblur=function(){ var s=slug($('ndId').value); if(s&&!/^qr-/.test(s)) s='qr-'+s; $('ndId').value=s; mudou(); };
-$('tipoFixo').onclick=function(){ tipoLink='fixo'; mudou(); $('ndUrl').focus(); };
-$('tipoEvento').onclick=function(){ tipoLink='evento'; mudou(); };
-$('ndUrl').oninput=mudou; $('nmNome').oninput=mudou; $('ndMem').onchange=mudou; $('nmMem').onchange=mudou;
+$('tipoFixo').onclick=function(){ tipoLink='fixo'; mudou(); $('evLink').focus(); };
+$('tipoEvento').onclick=function(){ tipoLink='evento'; mudou(); $('evLink').focus(); }; $('nmNome').oninput=mudou; $('ndMem').onchange=mudou; $('nmMem').onchange=mudou;
 $('form').onsubmit=salvar;
 $('dlPng').onclick=function(){ var r=$('resultado').dataset; baixarPng({url:r.url,origem:r.origem,midia:r.midia,campanha:r.campanha}); };
 $('dlSvg').onclick=function(){ var r=$('resultado').dataset; baixarSvg({url:r.url,origem:r.origem,midia:r.midia,campanha:r.campanha}); };
