@@ -14,11 +14,21 @@
       "id": "qr-newsroom",
       "nome": "Newsroom",
       "url": "https://www.quintoandar.com.br/newsroom/"
+    },
+    {
+      "id": "qr-forms-de-talentos",
+      "nome": "Forms de talentos"
     }
   ],
   "midias": [
     "placa",
     "digital-card"
   ],
-  "eventos": []
+  "eventos": [
+    {
+      "origem": "qr-forms-de-talentos",
+      "campanha": "brasa-summit-2026",
+      "url": "https://forms.gle/XSkYc48vBiT8LJpu8"
+    }
+  ]
 }
