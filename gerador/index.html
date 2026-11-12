@@ -27,8 +27,13 @@
   .seg button small { font-weight:400; color:var(--mut); font-size:.78rem; }
   .seg button[aria-checked=true] { border-color:var(--acc); outline:2px solid var(--acc); background:var(--card); }
   .aviso { color:var(--warn); }
-  .tit { text-transform:uppercase; font-weight:700; text-decoration:underline; font-size:.88rem; letter-spacing:.03em; margin:16px 0 6px; }
-  #ajuda summary { text-transform:uppercase; font-weight:700; text-decoration:underline; }
+  .tit { text-transform:uppercase; font-weight:700; text-decoration:underline; font-size:.88rem; letter-spacing:.03em; margin:0 0 12px; }
+  .guia { display:grid; grid-template-columns:1fr; gap:16px; }
+  .guia .card { border:1px solid var(--bd); border-radius:12px; padding:18px 22px; background:var(--card); }
+  .guia ol, .guia ul { margin:0; padding-left:22px; line-height:1.6; }
+  .guia li { margin-bottom:10px; }
+  .guia li:last-child { margin-bottom:0; }
+  .guia code { line-height:1.4; word-break:normal; overflow-wrap:break-word; }
   .row > select, .row > input { flex:1; min-width:0; }
   .sub { margin-top:8px; }
   .hint { color:var(--mut); font-size:.85rem; margin-top:4px; }
@@ -39,7 +44,6 @@
   .tabs button[aria-selected=true] { color:var(--fg); border-bottom-color:var(--acc); font-weight:600; }
   details.box { border:1px solid var(--bd); border-radius:10px; padding:10px 12px; background:var(--card); margin:0 0 8px; }
   details.box summary { cursor:pointer; font-weight:600; }
-  details.box ol, details.box ul { margin:8px 0 0; padding-left:20px; line-height:1.5; }
   code, .mono { font-family: ui-monospace, monospace; font-size:.82rem; word-break:break-all; }
   #urlFinal { background:var(--card); border:1px solid var(--bd); padding:8px; border-radius:6px; min-height:2.4em; }
   #salvar { width:100%; margin-top:18px; padding:13px; font-weight:600; }
@@ -63,7 +67,7 @@
     body { padding: 28px 32px; }
     h1 { font-size: 1.6rem; }
     #abaGerar { display:grid; grid-template-columns: minmax(0,1.1fr) minmax(0,1fr); column-gap:32px; align-items:start; }
-    #abaGerar > #ajuda, #abaGerar > #conexao { grid-column: 1 / -1; }
+    #abaGerar > #conexao { grid-column: 1 / -1; }
     #abaGerar > #form { grid-column: 1; }
     #painel { grid-column: 2; position:sticky; top:16px; }
     #vazio { display:flex; align-items:center; justify-content:center; text-align:center; min-height:340px; border:2px dashed var(--bd); border-radius:12px; color:var(--mut); padding:24px; margin-top:16px; }
@@ -72,8 +76,8 @@
     #lista { display:grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap:12px; }
     #lista .item { margin-top:0; }
     #lista > p { grid-column: 1 / -1; }
-    details.box ol, details.box ul { columns: 2; column-gap: 32px; }
-    details.box li { break-inside: avoid; margin-bottom:4px; }
+    .guia { grid-template-columns: 1fr 1fr; }
+    .guia .larga { grid-column: 1 / -1; }
     #filtro { max-width: 480px; }
   }
   .tag { display:inline-block; font-size:.75rem; border:1px solid var(--bd); border-radius:999px; padding:1px 8px; margin-right:4px; }
@@ -84,46 +88,67 @@
   <h1>Gerador de QR com tracking</h1>
 
   <div class="tabs" role="tablist">
+    <button type="button" role="tab" id="tabInstr" aria-selected="false">Instruções</button>
     <button type="button" role="tab" id="tabGerar" aria-selected="true">Gerar QR</button>
     <button type="button" role="tab" id="tabHist" aria-selected="false">Histórico</button>
   </div>
 
+  <!-- ===== ABA INSTRUÇÕES ===== -->
+  <section id="abaInstr" hidden>
+    <div class="guia">
+      <article class="card larga">
+        <h3 class="tit">Passo a passo</h3>
+        <ol>
+          <li><b>Destino</b>: para onde o QR leva. Ex.: LinkedIn, Página de carreiras, Forms de talentos. A lista guarda só o <b>utm_source</b>, sempre com a mesma grafia.</li>
+          <li><b>Mídia</b>: onde o QR será usado. Ex.: <code>placa</code>, <code>digital-card</code>, <code>flyer</code>, <code>email</code>.</li>
+          <li><b>Nome do evento</b>: vira a campanha no Google Analytics. Escreva como quiser, o gerador padroniza. Ex.: <code>Brasa Summit 2026</code> vira <code>brasa-summit-2026</code>. Eventos já usados aparecem como sugestão.</li>
+          <li><b>Link do evento</b>: obrigatório quando o destino usa um link diferente em cada evento. Nos demais, é opcional.</li>
+          <li>Clique em <b>Salvar e gerar QR</b>. O QR só aparece depois de salvo, e fica guardado na aba <b>Histórico</b>.</li>
+          <li>Baixe o <b>PNG</b> (slides, e-mail, redes) ou o <b>SVG</b> (placas e material impresso: envie à gráfica).</li>
+          <li><b>Antes de imprimir, escaneie o QR com o celular</b> e confirme que abre o lugar certo.</li>
+        </ol>
+      </article>
+
+      <article class="card">
+        <h3 class="tit">Link fixo ou link por evento</h3>
+        <ul>
+          <li><b>Link fixo</b>: o mesmo link em todos os eventos. Ex.: LinkedIn, Newsroom.</li>
+          <li><b>Link por evento</b>: cada evento informa o seu. Ex.: um forms diferente a cada evento. O destino guarda só o <b>utm_source</b>.</li>
+          <li><b>Memorizar</b> desmarcado: o destino não entra na lista e o campo vira apenas <b>Link</b>, valendo só para este QR.</li>
+        </ul>
+      </article>
+
+      <article class="card">
+        <h3 class="tit">Destino ou mídia novos</h3>
+        <ul>
+          <li>Clique em <b>+ Novo</b> (ou <b>+ Nova</b>) e preencha os campos que aparecem. Clique em <b>Cancelar</b> para voltar à lista.</li>
+          <li>Com <b>Memorizar</b> marcado, escolha o <b>tipo de link</b> (fixo ou por evento). O item entra na lista e aparece nos próximos QR.</li>
+          <li>O <b>utm_source</b> do destino sempre começa com <code>qr-</code>. Ex.: <code>qr-forms-talentos</code>.</li>
+        </ul>
+      </article>
+
+      <article class="card larga">
+        <h3 class="tit">Exemplos</h3>
+        <ul>
+          <li><b>Placa do Brasa Summit levando ao LinkedIn:</b> Destino = LinkedIn · Mídia = placa · Evento = <code>Brasa Summit 2026</code>.</li>
+          <li><b>Cartão digital levando ao forms de talentos:</b> Destino = Forms de talentos (link por evento) · Mídia = digital-card · Evento = <code>Select Experience 2026</code> · Link do evento = o forms deste evento.</li>
+          <li><b>Mesmo evento em duas mídias:</b> gere duas vezes, uma com <code>placa</code> e outra com <code>digital-card</code>. Assim o GA4 mostra qual mídia trouxe mais scans.</li>
+          <li><b>Destino de uso único:</b> clique em <b>+ Novo</b>, preencha, <b>desmarque</b> Memorizar e informe o <b>Link</b>.</li>
+        </ul>
+      </article>
+
+      <article class="card larga">
+        <h3 class="tit">Antes de salvar</h3>
+        <ul>
+          <li>Para salvar é preciso conectar o GitHub uma vez neste navegador, na seção <b>Conexão com o GitHub</b>, no fim da aba <b>Gerar QR</b>.</li>
+          <li>Depois de salvar um destino ou link novo, espere cerca de <b>1 minuto</b> antes de imprimir ou testar.</li>
+        </ul>
+      </article>
+    </div>
+  </section>
+
   <!-- ===== ABA GERAR ===== -->
   <section id="abaGerar">
-    <details class="box" id="ajuda" open>
-      <summary>Como usar</summary>
-      <h3 class="tit" style="margin-top:10px">Passo a passo</h3>
-      <ol>
-        <li><b>Destino</b>: para onde o QR leva. Ex.: LinkedIn, Página de carreiras, Forms de talentos. A lista guarda só o <b>utm_source</b>, sempre com a mesma grafia.</li>
-        <li><b>Mídia</b>: onde o QR será usado. Ex.: <code>placa</code>, <code>digital-card</code>, <code>flyer</code>, <code>email</code>.</li>
-        <li><b>Nome do evento</b>: vira a campanha no Google Analytics. Escreva como quiser, o gerador padroniza. Ex.: <code>Brasa Summit 2026</code> vira <code>brasa-summit-2026</code>. Eventos já usados aparecem como sugestão.</li>
-        <li><b>Link do evento</b>: obrigatório quando o destino usa um link diferente em cada evento. Nos demais, é opcional.</li>
-        <li>Clique em <b>Salvar e gerar QR</b>. O QR só aparece depois de salvo, e fica guardado na aba <b>Histórico</b>.</li>
-        <li>Baixe o <b>PNG</b> (slides, e-mail, redes) ou o <b>SVG</b> (placas e material impresso: envie à gráfica).</li>
-        <li><b>Antes de imprimir, escaneie o QR com o celular</b> e confirme que abre o lugar certo.</li>
-      </ol>
-      <h3 class="tit">Link fixo ou link por evento</h3>
-      <ul>
-        <li><b>Link fixo</b>: o mesmo link em todos os eventos. Ex.: LinkedIn, Newsroom.</li>
-        <li><b>Link por evento</b>: cada evento informa o seu. Ex.: um forms diferente a cada evento. O destino guarda só o <b>utm_source</b>.</li>
-        <li><b>Memorizar</b> desmarcado: o destino não entra na lista e o campo vira apenas <b>Link</b>, valendo só para este QR.</li>
-      </ul>
-      <h3 class="tit">Exemplos</h3>
-      <ul>
-        <li><b>Placa do Brasa Summit levando ao LinkedIn:</b> Destino = LinkedIn · Mídia = placa · Evento = <code>Brasa Summit 2026</code>.</li>
-        <li><b>Cartão digital levando ao forms de talentos:</b> Destino = Forms de talentos (link por evento) · Mídia = digital-card · Evento = <code>Select Experience 2026</code> · Link do evento = o forms deste evento.</li>
-        <li><b>Mesmo evento em duas mídias:</b> gere duas vezes, uma com <code>placa</code> e outra com <code>digital-card</code>. Assim o GA4 mostra qual mídia trouxe mais scans.</li>
-        <li><b>Destino de uso único:</b> clique em <b>+ Novo</b>, preencha, <b>desmarque</b> Memorizar e informe o <b>Link</b>.</li>
-      </ul>
-      <h3 class="tit">Destino ou mídia novos</h3>
-      <ul>
-        <li>Clique em <b>+ Novo</b> (ou <b>+ Nova</b>) e preencha os campos que aparecem. Clique em <b>Cancelar</b> para voltar à lista.</li>
-        <li>Com <b>Memorizar</b> marcado, escolha o <b>tipo de link</b> (fixo ou por evento). O item entra na lista e aparece nos próximos QR.</li>
-        <li>O <b>utm_source</b> do destino sempre começa com <code>qr-</code>. Ex.: <code>qr-forms-talentos</code>.</li>
-      </ul>
-      <p class="hint" style="margin-top:10px">Para salvar é preciso conectar o GitHub uma vez neste navegador (seção <b>Conexão com o GitHub</b>, no fim da página). Depois de salvar um destino ou link novo, espere cerca de 1 minuto antes de imprimir ou testar.</p>
-    </details>
-
     <form id="form" novalidate autocomplete="off">
       <label for="destino">Destino</label>
       <div class="row">
@@ -496,15 +521,15 @@ function renderHist(){
     b.appendChild(st); d.appendChild(b); lista.appendChild(d);
   });
 }
+var ABAS={instr:['abaInstr','tabInstr'],gerar:['abaGerar','tabGerar'],hist:['abaHist','tabHist']};
 function aba(qual){
-  var g=qual==='gerar';
-  $('abaGerar').hidden=!g; $('abaHist').hidden=g;
-  $('tabGerar').setAttribute('aria-selected',g); $('tabHist').setAttribute('aria-selected',!g);
-  if(!g){ $('histInfo').textContent='Carregando…'; carregar('historico.json',{qrs:[]}).then(function(h){ hist=h&&h.qrs?h:{qrs:[]}; renderHist(); atualizarSugestoes(); }); }
+  Object.keys(ABAS).forEach(function(k){ var on=k===qual; $(ABAS[k][0]).hidden=!on; $(ABAS[k][1]).setAttribute('aria-selected',on); });
+  ls('qr_aba',qual);
+  if(qual==='hist'){ $('histInfo').textContent='Carregando…'; carregar('historico.json',{qrs:[]}).then(function(h){ hist=h&&h.qrs?h:{qrs:[]}; renderHist(); atualizarSugestoes(); }); }
 }
 
 /* ---------- eventos ---------- */
-$('tabGerar').onclick=function(){aba('gerar');}; $('tabHist').onclick=function(){aba('hist');};
+$('tabInstr').onclick=function(){aba('instr');}; $('tabGerar').onclick=function(){aba('gerar');}; $('tabHist').onclick=function(){aba('hist');};
 $('novoDestinoBtn').onclick=alternarDestino; $('novaMidiaBtn').onclick=alternarMidia;
 $('destino').onchange=mudou; $('midia').onchange=mudou; $('evento').oninput=mudou; $('evLink').oninput=mudou;
 $('ndNome').oninput=function(){ if(!idEditado) $('ndId').value='qr-'+slug($('ndNome').value).replace(/^qr-/,''); if(!$('ndNome').value.trim()) $('ndId').value=''; mudou(); };
@@ -524,6 +549,7 @@ $('tkLimpar').onclick=function(){ ls('qr_token',null); atualizarGh(); msg('Token
 
 /* ---------- início ---------- */
 atualizarGh();
+aba(ls('qr_visto')?'gerar':'instr'); ls('qr_visto','1');
 Promise.all([ carregar('destinations.json',{destinos:[],midias:[],eventos:[]}), carregar('historico.json',{qrs:[]}) ]).then(function(r){
   dados=r[0]; dados.destinos=dados.destinos||[]; dados.midias=dados.midias||[]; dados.eventos=dados.eventos||[];
   hist=r[1]&&r[1].qrs?r[1]:{qrs:[]};
