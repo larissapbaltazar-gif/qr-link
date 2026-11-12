@@ -27,6 +27,9 @@
   .seg button small { font-weight:400; color:var(--mut); font-size:.78rem; }
   .seg button[aria-checked=true] { border-color:var(--acc); outline:2px solid var(--acc); background:var(--card); }
   .aviso { color:var(--warn); }
+  #pub { font-size:.92rem; margin-top:6px; }
+  #pub.espera { color:var(--warn); }
+  #pub.pronto { color:var(--ok); font-weight:600; }
   label .hint, .check .hint { display:inline; margin:0 0 0 4px; font-weight:400; }
   .rot { flex:1; font-weight:600; padding:10px 0; }
   input:disabled { background:var(--card); color:var(--mut); border-style:dashed; cursor:not-allowed; font-style:italic; opacity:1; -webkit-text-fill-color:var(--mut); }
@@ -145,7 +148,7 @@
         <h3 class="tit">Antes de salvar</h3>
         <ul>
           <li>Para salvar é preciso conectar o GitHub uma vez neste navegador, na seção <b>Conexão com o GitHub</b>, no fim da aba <b>Gerar QR</b>.</li>
-          <li>Depois de salvar um destino ou link novo, espere cerca de <b>1 minuto</b> antes de imprimir ou testar.</li>
+          <li>Depois de salvar um destino ou link novo, a página pública leva cerca de <b>1 minuto</b> para atualizar. O gerador acompanha isso e avisa <b>"Publicado"</b>. Só teste o QR depois desse aviso.</li>
         </ul>
       </article>
     </div>
@@ -199,6 +202,7 @@
 
       <button id="salvar" type="submit">Salvar e gerar QR</button>
       <div id="msg" role="status" aria-live="polite"></div>
+      <div id="pub" role="status" aria-live="polite" class="hint" hidden></div>
       <button type="button" class="sec sub" id="ajudaTokenMsg" hidden>Como criar um token</button>
     </form>
 
@@ -437,7 +441,7 @@ function atualizarCampos(){
   $('evLinkLabel').textContent=lab; $('evLinkHint').textContent=hint;
 }
 function mudou(){
-  $('resultado').hidden=true; msg('');
+  $('resultado').hidden=true; msg(''); pubId++; pubVisivel('');
   atualizarCampos();
   var s=selecao();
   if(!novoDestino&&$('destino').value) ls('qr_destino',$('destino').value);
@@ -454,6 +458,30 @@ function mostrarResultado(e){
 }
 function atualizarGh(){ var ok=!!ls('qr_token'); $('ghStatus').textContent=ok?'· conectado neste navegador':'· não conectado'; }
 
+var pubId=0;
+function pubVisivel(texto,cls){ var e=$('pub'); e.hidden=!texto; e.textContent=texto||''; e.className='hint '+(cls||''); }
+function noAr(d,op){
+  var ok=true;
+  if(op.novoDestino) ok=ok&&(d.destinos||[]).some(function(x){return x.id===op.novoDestino.id&&(!op.novoDestino.url||x.url===op.novoDestino.url);});
+  if(op.novaMidia) ok=ok&&(d.midias||[]).indexOf(op.novaMidia)>-1;
+  if(op.evento) ok=ok&&(d.eventos||[]).some(function(x){return x.origem===op.evento.origem&&x.campanha===op.evento.campanha&&x.url===op.evento.url;});
+  return ok;
+}
+function aguardarPublicacao(op){
+  var meu=++pubId, ini=Date.now();
+  pubVisivel('Publicando na página pública… aguarde antes de testar o QR.','espera');
+  (function volta(){
+    if(meu!==pubId) return;
+    fetch('../destinations.json?_='+Date.now(),{cache:'no-store'}).then(function(r){ return r.ok?r.json():null; }).catch(function(){ return null; }).then(function(d){
+      if(meu!==pubId) return;
+      if(d&&noAr(d,op)){ pubVisivel('Publicado. Já pode testar e imprimir o QR.','pronto'); return; }
+      var seg=Math.round((Date.now()-ini)/1000);
+      if(seg>=180){ pubVisivel('Ainda não apareceu na página pública. Aguarde mais alguns minutos antes de testar.','espera'); return; }
+      pubVisivel('Publicando na página pública… '+seg+' s. Aguarde antes de testar o QR.','espera');
+      setTimeout(volta,4000);
+    });
+  })();
+}
 function salvar(ev){
   ev.preventDefault();
   var s=selecao(), erro=validar(s);
@@ -505,8 +533,9 @@ function salvar(ev){
     ultimoPrefill=link; atualizarCampos(); atualizarSugestoes();
     $('urlFinal').textContent=url;
     mostrarResultado({url:url,origem:s.origem,midia:s.midia,campanha:s.campanha});
-    var aviso=(op.novoDestino||op.evento||op.removerEvento)?' Aguarde cerca de 1 minuto antes de imprimir ou testar o QR.':'';
-    msg((precisaHist?'Salvo no histórico.':'Este QR já estava no histórico.')+aviso,'ok');
+    var mudouConfig=!!(op.novoDestino||op.novaMidia||op.evento);
+    msg((precisaHist?'Salvo no histórico.':'Este QR já estava no histórico.'),'ok');
+    if(mudouConfig) aguardarPublicacao(op); else { pubId++; pubVisivel('Já está publicado. Pode testar e imprimir o QR.','pronto'); }
   }).catch(function(e){
     msg(e&&e.message&&e.message!=='SEM_TOKEN'?e.message:'Não foi possível salvar. Tente de novo.','err');
   }).then(function(){ $('salvar').disabled=false; });
