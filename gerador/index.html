@@ -45,6 +45,10 @@
   .item .u { margin-top:6px; }
   .item .b { display:flex; gap:8px; flex-wrap:wrap; margin-top:8px; }
   .item .b button { padding:7px 10px; font-size:.9rem; }
+  dialog { max-width:520px; width:calc(100% - 32px); border:1px solid var(--bd); border-radius:12px; background:var(--bg); color:var(--fg); padding:18px; }
+  dialog::backdrop { background:rgba(0,0,0,.5); }
+  dialog ol { padding-left:20px; line-height:1.55; }
+  a.btn { display:inline-block; padding:10px 14px; border-radius:8px; background:var(--acc); color:#fff; text-decoration:none; font-weight:600; }
   .tag { display:inline-block; font-size:.75rem; border:1px solid var(--bd); border-radius:999px; padding:1px 8px; margin-right:4px; }
 </style>
 </head>
@@ -121,6 +125,7 @@
 
       <button id="salvar" type="submit">Salvar e gerar QR</button>
       <div id="msg" role="status" aria-live="polite"></div>
+      <button type="button" class="sec sub" id="ajudaTokenMsg" hidden>Como criar um token</button>
     </form>
 
     <div id="resultado" hidden>
@@ -138,6 +143,7 @@
       <div class="hint">Cole um token do GitHub com permissão <b>Contents: Read and write</b> somente no repositório qr-link. Ele fica guardado apenas neste navegador.</div>
       <input id="token" type="password" class="sub" placeholder="github_pat_…" autocomplete="off" aria-label="Token do GitHub">
       <div class="row sub"><button id="tkSalvar" type="button">Guardar token</button><button class="sec" id="tkLimpar" type="button">Remover</button></div>
+      <div class="sub"><button type="button" class="sec" id="ajudaToken">Como criar um token novo</button></div>
     </details>
   </section>
 
@@ -148,6 +154,23 @@
     <div id="lista"></div>
   </section>
 </main>
+
+
+<dialog id="dlgToken" aria-labelledby="dlgTitulo">
+  <h2 id="dlgTitulo" style="margin-top:0;font-size:1.1rem">Como criar um token novo</h2>
+  <p class="hint">Você precisa de um token para salvar QR e cadastrar destinos. Se o atual venceu ou nunca foi criado, siga os passos. Os QR já impressos não são afetados.</p>
+  <p><a class="btn" id="linkToken" href="https://github.com/settings/personal-access-tokens/new?name=qr-gerador&amp;description=Gerador%20de%20QR&amp;expires_in=90&amp;contents=write" target="_blank" rel="noopener">Abrir a página do GitHub</a></p>
+  <ol>
+    <li>Entre no GitHub com a conta <b>larissapbaltazar-gif</b>.</li>
+    <li><b>Token name:</b> <code>qr-gerador</code>. <b>Expiration:</b> 90 dias (ou o prazo que preferir).</li>
+    <li><b>Repository access:</b> escolha <b>Only select repositories</b> e marque só <b>qr-link</b>.</li>
+    <li>Em <b>Permissions → Repository permissions</b>, defina <b>Contents: Read and write</b>.</li>
+    <li>Clique em <b>Generate token</b> e copie o valor (<code>github_pat_…</code>). Ele aparece uma única vez.</li>
+    <li>Volte aqui, cole em <b>Conexão com o GitHub</b> e clique em <b>Guardar token</b>.</li>
+  </ol>
+  <p class="hint">Caminho manual, se o botão não abrir: GitHub → foto do perfil → <b>Settings</b> → <b>Developer settings</b> → <b>Personal access tokens</b> → <b>Fine-grained tokens</b> → <b>Generate new token</b>.<br>Endereço: <code>github.com/settings/personal-access-tokens/new</code></p>
+  <div class="row"><button type="button" id="fechaDlg">Fechar</button></div>
+</dialog>
 
 <script src="qrcode.js"></script>
 <script>
@@ -163,7 +186,8 @@ function ls(k,v){
   try{ if(v===undefined) return localStorage.getItem(k); if(v===null) localStorage.removeItem(k); else localStorage.setItem(k,v); }
   catch(e){ if(v===undefined) return memLs[k]||null; if(v===null) delete memLs[k]; else memLs[k]=v; }
 }
-function msg(t,c){ var m=$('msg'); m.textContent=t||''; m.className=c||''; }
+function msg(t,c){ var m=$('msg'); m.textContent=t||''; m.className=c||''; $('ajudaTokenMsg').hidden=!(c==='err'&&/token|GitHub/i.test(t||'')); }
+function abrirAjudaToken(){ var d=$('dlgToken'); if(d.showModal) d.showModal(); else d.setAttribute('open',''); }
 function slug(s){ return String(s||'').normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase().trim().replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,''); }
 function b64d(s){ return decodeURIComponent(escape(atob(s.replace(/\n/g,'')))); }
 function b64e(s){ return btoa(unescape(encodeURIComponent(s))); }
@@ -402,6 +426,7 @@ $('dlSvg').onclick=function(){ var r=$('resultado').dataset; baixarSvg({url:r.ur
 $('cpLink').onclick=function(){ copiar($('resultado').dataset.url,function(t){msg(t,'ok');}); };
 $('filtro').oninput=renderHist;
 $('tkSalvar').onclick=function(){ var v=$('token').value.trim(); if(!v){msg('Cole o token antes de guardar.','err');return;} ls('qr_token',v); $('token').value=''; atualizarGh(); msg('Token guardado neste navegador. Agora clique em Salvar e gerar QR.','ok'); };
+$('ajudaToken').onclick=abrirAjudaToken; $('ajudaTokenMsg').onclick=abrirAjudaToken; $('fechaDlg').onclick=function(){ $('dlgToken').close(); };
 $('tkLimpar').onclick=function(){ ls('qr_token',null); atualizarGh(); msg('Token removido deste navegador.','ok'); };
 
 /* ---------- início ---------- */
