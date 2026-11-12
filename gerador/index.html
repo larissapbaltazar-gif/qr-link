@@ -184,12 +184,13 @@
   <p><a class="btn" id="linkToken" href="https://github.com/settings/personal-access-tokens/new?name=qr-gerador&amp;description=Gerador%20de%20QR&amp;expires_in=90&amp;contents=write" target="_blank" rel="noopener">Abrir a página do GitHub</a></p>
   <ol>
     <li>Entre no GitHub com a conta <b>larissapbaltazar-gif</b>.</li>
-    <li><b>Token name:</b> <code>qr-gerador</code>. <b>Expiration:</b> 90 dias (ou o prazo que preferir).</li>
+    <li><b>Token name:</b> use um nome que ainda não exista, como <code id="nomeSug">qr-gerador</code> (o GitHub recusa nomes repetidos: "Name has already been taken"). <b>Expiration:</b> 90 dias (ou o prazo que preferir).</li>
     <li><b>Repository access:</b> escolha <b>Only select repositories</b> e marque só <b>qr-link</b>.</li>
     <li>Em <b>Permissions → Repository permissions</b>, defina <b>Contents: Read and write</b>.</li>
     <li>Clique em <b>Generate token</b> e copie o valor (<code>github_pat_…</code>). Ele aparece uma única vez.</li>
     <li>Volte aqui, cole em <b>Conexão com o GitHub</b> e clique em <b>Guardar token</b>.</li>
   </ol>
+  <p class="hint"><b>Já existe um token com esse nome?</b> Abra <code>github.com/settings/personal-access-tokens</code>, clique nele e use <b>Regenerate token</b>, ou apague-o em <b>Delete</b> e crie outro.</p>
   <p class="hint">Caminho manual, se o botão não abrir: GitHub → foto do perfil → <b>Settings</b> → <b>Developer settings</b> → <b>Personal access tokens</b> → <b>Fine-grained tokens</b> → <b>Generate new token</b>.<br>Endereço: <code>github.com/settings/personal-access-tokens/new</code></p>
   <div class="row"><button type="button" id="fechaDlg">Fechar</button></div>
 </dialog>
@@ -209,7 +210,10 @@ function ls(k,v){
   catch(e){ if(v===undefined) return memLs[k]||null; if(v===null) delete memLs[k]; else memLs[k]=v; }
 }
 function msg(t,c){ var m=$('msg'); m.textContent=t||''; m.className=c||''; $('ajudaTokenMsg').hidden=!(c==='err'&&/token|GitHub/i.test(t||'')); }
-function abrirAjudaToken(){ var d=$('dlgToken'); if(d.showModal) d.showModal(); else d.setAttribute('open',''); }
+function nomeToken(){ var d=new Date(); return 'qr-gerador-'+d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+function abrirAjudaToken(){
+  var n=nomeToken(); $('nomeSug').textContent=n;
+  $('linkToken').href='https://github.com/settings/personal-access-tokens/new?name='+encodeURIComponent(n)+'&description=Gerador%20de%20QR&expires_in=90&contents=write'; var d=$('dlgToken'); if(d.showModal) d.showModal(); else d.setAttribute('open',''); }
 function slug(s){ return String(s||'').normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase().trim().replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,''); }
 function b64d(s){ return decodeURIComponent(escape(atob(s.replace(/\n/g,'')))); }
 function b64e(s){ return btoa(unescape(encodeURIComponent(s))); }
