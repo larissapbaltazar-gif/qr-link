@@ -46,7 +46,7 @@
       var campanha = params.get('utm_campaign') || '';
       var ev = (d.eventos || []).filter(function (x) { return x.origem === fonte && x.campanha === campanha; })[0];
       var achou = (d.destinos || []).filter(function (x) { return x.id === fonte; })[0];
-      destino = ev ? ev.url : (achou ? achou.url : PADRAO);
+      destino = ev ? ev.url : ((achou && achou.url) ? achou.url : PADRAO);
       tentar();
     })
     .catch(function () { destino = PADRAO; tentar(); });
