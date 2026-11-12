@@ -1,6 +1,13 @@
 {
   "qrs": [
     {
+      "data": "2026-11-12T01:50:44.649Z",
+      "campanha": "brasa-summit-2026",
+      "origem": "qr-linkedin",
+      "midia": "digital-card",
+      "url": "https://qr-eventos.qr-go.workers.dev/?utm_source=qr-linkedin&utm_medium=digital-card&utm_campaign=brasa-summit-2026"
+    },
+    {
       "data": "2026-11-12T01:35:57.690Z",
       "campanha": "select-experience-2026",
       "origem": "qr-forms-de-talentos",
